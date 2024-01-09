@@ -1,0 +1,9 @@
+Turn right and go ahead 293 px
+Turn down and go ahead 144 px
+Turn right and go ahead 171 px
+Turn up and go ahead 250 px
+Turn right and go ahead 358 px
+Turn down and go ahead 95 px
+Turn right and go ahead 98 px
+Turn up and go ahead 233 px
+Turn right and go ahead 356 px
