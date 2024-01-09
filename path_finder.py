@@ -35,25 +35,32 @@ def find_nearest_waypoint(image, pixel, target_color):
     return nearest_waypoint
 
 
-def a_star_search(start, end):
-    """Perform A* search algorithm."""
+def bellman_ford_search(start, end):
+    """Perform Bellman-Ford search algorithm."""
     width, height = image.size
-    g_cost = np.full((width, height), float('inf'))
-    f_cost = np.full((width, height), float('inf'))
+    distance = np.full((width, height), float('inf'))
     rotation_count = np.zeros((width, height), dtype=int)
-    visited = np.zeros((width, height), dtype=bool)
     parent = [[None] * height for _ in range(width)]
 
-    g_cost[start[0]][start[1]] = 0
-    f_cost[start[0]][start[1]] = manhattan_heuristic(start, end)
-    pq = [(f_cost[start[0]][start[1]], start, None)]  # f-cost, Position, Direction
+    distance[start[0]][start[1]] = 0
 
-    while pq:
-        _, current, direction = heapq.heappop(pq)
-        if process_node(image, current, end, direction, visited, g_cost, rotation_count, f_cost, parent, pq):
-            break
+    # Relax edges repeatedly
+    for _ in range(width * height - 1):
+        for x in range(width):
+            for y in range(height):
+                for neighbor, new_direction, rotation in get_neighbors((x, y), None, image):
+                    new_x, new_y = neighbor
+                    if is_valid_pixel(neighbor, image, (255, 255, 255)):
+                        tentative_distance = distance[x][y] + 1
+                        total_rotations = rotation_count[x][y] + rotation
+
+                        if tentative_distance < distance[new_x][new_y]:
+                            distance[new_x][new_y] = tentative_distance
+                            rotation_count[new_x][new_y] = total_rotations
+                            parent[new_x][new_y] = (x, y)
 
     return reconstruct_path(end, parent), rotation_count[end[0]][end[1]]
+
 
 def process_node(image, current, end, direction, visited, g_cost, rotation_count, f_cost, parent, pq):
     """Process a single node in the A* search algorithm."""
@@ -170,7 +177,7 @@ def main():
     start_pixel = find_nearest_waypoint(image, (785, 1007), target_color)
     end_pixel = find_nearest_waypoint(image, (2186, 763), target_color)
 
-    path, rotations = a_star_search(start_pixel, end_pixel)
+    path, rotations = bellman_ford_search(start_pixel, end_pixel)
     print(f"Path found with {rotations} rotations")
     draw_path(image, path, output_image_path)
 
