@@ -1,4 +1,3 @@
-Turn right and go ahead 0 px
 Turn down and go ahead 90 px
 Turn right and go ahead 293 px
 Turn down and go ahead 54 px
