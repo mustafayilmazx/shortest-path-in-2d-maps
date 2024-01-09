@@ -1,11 +1,10 @@
-Turn right and go ahead 0 px
 Turn down and go ahead 90 px
-Turn right and go ahead 293 px
+Turn right and go ahead 198 px
 Turn down and go ahead 54 px
-Turn right and go ahead 251 px
+Turn right and go ahead 266 px
 Turn up and go ahead 250 px
-Turn right and go ahead 278 px
+Turn right and go ahead 194 px
 Turn down and go ahead 95 px
-Turn right and go ahead 142 px
+Turn right and go ahead 262 px
 Turn up and go ahead 233 px
-Turn right and go ahead 312 px
+Turn right and go ahead 356 px

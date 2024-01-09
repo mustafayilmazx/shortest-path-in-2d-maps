@@ -35,50 +35,43 @@ def find_nearest_waypoint(image, pixel, target_color):
     return nearest_waypoint
 
 
-def a_star_search(start, end):
-    """Perform A* search algorithm."""
+def lee_search(start, end):
+    """Perform Lee algorithm for pathfinding."""
     width, height = image.size
-    g_cost = np.full((width, height), float('inf'))
-    f_cost = np.full((width, height), float('inf'))
-    rotation_count = np.zeros((width, height), dtype=int)
-    visited = np.zeros((width, height), dtype=bool)
-    parent = [[None] * height for _ in range(width)]
+    grid = np.full((width, height), -1)  # Initialize grid with -1
+    queue = [start]
+    grid[start[0]][start[1]] = 0  # Distance from start to start is 0
 
-    g_cost[start[0]][start[1]] = 0
-    f_cost[start[0]][start[1]] = manhattan_heuristic(start, end)
-    pq = [(f_cost[start[0]][start[1]], start, None)]  # f-cost, Position, Direction
+    # Wave propagation
+    while queue:
+        x, y = queue.pop(0)
 
-    while pq:
-        _, current, direction = heapq.heappop(pq)
-        if process_node(image, current, end, direction, visited, g_cost, rotation_count, f_cost, parent, pq):
+        if (x, y) == end:
             break
 
-    return reconstruct_path(end, parent), rotation_count[end[0]][end[1]]
+        for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:  # 4-connected grid
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < width and 0 <= ny < height and grid[nx][ny] == -1 and is_valid_pixel((nx, ny), image, (255, 255, 255)):
+                grid[nx][ny] = grid[x][y] + 1
+                queue.append((nx, ny))
 
-def process_node(image, current, end, direction, visited, g_cost, rotation_count, f_cost, parent, pq):
-    """Process a single node in the A* search algorithm."""
-    x, y = current
-    if current == end:
-        return True
+    # Reconstruct path from end to start
+    path = []
+    current = end
+    if grid[end[0]][end[1]] == -1:  # Check if the path is reachable
+        return None, -1  # Path not found
 
-    if visited[x][y]:
-        return False
+    while current != start:
+        path.append(current)
+        x, y = current
+        for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < width and 0 <= ny < height and grid[nx][ny] == grid[x][y] - 1:
+                current = (nx, ny)
+                break
 
-    visited[x][y] = True
-
-    for neighbor, new_direction, rotation in get_neighbors(current, direction, image):
-        new_x, new_y = neighbor
-        tentative_g_cost = g_cost[x][y] + 1
-        total_rotations = rotation_count[x][y] + rotation
-
-        if tentative_g_cost < g_cost[new_x][new_y]:
-            parent[new_x][new_y] = current
-            g_cost[new_x][new_y] = tentative_g_cost
-            rotation_count[new_x][new_y] = total_rotations
-            f_cost[new_x][new_y] = tentative_g_cost + manhattan_heuristic(neighbor, end)
-            heapq.heappush(pq, (f_cost[new_x][new_y], neighbor, new_direction))
-    
-    return False
+    path.append(start)
+    return path[::-1], grid[end[0]][end[1]]  # Path and length
 
 def reconstruct_path(end, parent):
     """Reconstruct the path from the end node to the start node."""
@@ -170,7 +163,7 @@ def main():
     start_pixel = find_nearest_waypoint(image, (785, 1007), target_color)
     end_pixel = find_nearest_waypoint(image, (2186, 763), target_color)
 
-    path, rotations = a_star_search(start_pixel, end_pixel)
+    path, rotations = lee_search(start_pixel, end_pixel)
     print(f"Path found with {rotations} rotations")
     draw_path(image, path, output_image_path)
 
